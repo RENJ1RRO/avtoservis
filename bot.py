@@ -720,7 +720,7 @@ async def available_roles_command(interaction: discord.Interaction):
             pass
 
 def run_bot():
-    TOKEN = "1KTHR4dlXs1GyIBgjbeYNTf0eFMJeFcE"
+    TOKEN = "aS4IpGXXP_NlhrroApi9CZRu2XAnJSDf"
     
     # Автоперезапуск при ошибках
     while True:

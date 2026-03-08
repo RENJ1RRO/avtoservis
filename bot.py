@@ -213,7 +213,7 @@ class RoleApproveView(View):
             if not has_permission:
                 try:
                     await interaction.response.send_message(
-                        "❌ У вас нет прав для рассмотрения заявок!",
+                        "❌ ты безправный, смирись",
                         ephemeral=True
                     )
                 except:
@@ -404,7 +404,7 @@ class RoleApproveView(View):
                 return
                 
             new_embed = discord.Embed(
-                title="❌ Заявка отклонена",
+                title="❌ Заявка отклонена, отклонение заявки не обсуждаеться",
                 color=0xff0000,
                 description=f"Заявка была отклонена {interaction.user.mention}"
             )

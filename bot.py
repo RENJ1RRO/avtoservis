@@ -25,6 +25,8 @@ MERIA_ROLE_ID = 1414046676641120266
 APPLICATIONS_CHANNEL_ID = 1417538990659342347
 ANNOUNCEMENTS_CHANNEL_ID = 1414036742494748814
 VERIFICATION_CHANNEL_ID = 1417544612381200619
+MP_ROLE_ID = 1480164048451403856
+MP_CHANNEL_ID = 1480164585385492610
 
 # Словарь для хранения истории заявок пользователей
 user_applications_history = {}
@@ -174,6 +176,39 @@ class SelfRoleRemoveView(View):
                 
         except Exception as e:
             logging.error(f"Ошибка в cancel_callback: {e}")
+
+class MpNotificationView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="🔔 Получать уведомления об МП / Наборах",
+        style=discord.ButtonStyle.primary,
+        custom_id="mp_notify_button"
+    )
+    async def mp_button(self, interaction: discord.Interaction, button: Button):
+
+        role = interaction.guild.get_role(MP_ROLE_ID)
+
+        if not role:
+            await interaction.response.send_message(
+                "❌ Роль уведомлений не найдена.",
+                ephemeral=True
+            )
+            return
+
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            await interaction.response.send_message(
+                "🔕 Вы отключили уведомления об МП/Наборах.",
+                ephemeral=True
+            )
+        else:
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(
+                "🔔 Вы включили уведомления об МП/Наборах!",
+                ephemeral=True
+            )
 
 class RoleApproveView(View):
     def __init__(self, role_id, user_id, role_name, server_nickname, rp_name, proof_url=None):
@@ -462,6 +497,7 @@ class MyBot(discord.Client):
             # Регистрируем персистентные View
             self.add_view(RoleApproveView(0, 0, "", "", ""))
             self.add_view(SelfRoleRemoveView(0))
+            self.add_view(MpNotificationView())
             
             logging.info("✅ Бот успешно инициализирован!")
         except Exception as e:
@@ -718,6 +754,39 @@ async def available_roles_command(interaction: discord.Interaction):
             await interaction.response.send_message("❌ Произошла ошибка!", ephemeral=True)
         except:
             pass
+
+@bot.tree.command(name="панель_мп", description="Отправить панель уведомлений МП")
+async def mp_panel(interaction: discord.Interaction):
+
+    channel = bot.get_channel(MP_CHANNEL_ID)
+
+    if not channel:
+        await interaction.response.send_message(
+            "❌ Канал не найден!",
+            ephemeral=True
+        )
+        return
+
+    embed = discord.Embed(
+        title="🔔 Уведомления о МП и Наборах",
+        description="Нажмите кнопку ниже чтобы получать уведомления о мероприятиях и наборах.",
+        color=0x2b2d31
+    )
+
+    embed.add_field(
+        name="Как это работает",
+        value="Нажмите кнопку чтобы **включить уведомления**.\nНажмите ещё раз чтобы **отключить**.",
+        inline=False
+    )
+
+    view = MpNotificationView()
+
+    await channel.send(embed=embed, view=view)
+
+    await interaction.response.send_message(
+        "✅ Панель уведомлений отправлена!",
+        ephemeral=True
+    )    
 
 def run_bot():
     TOKEN = "MTQyNjM0NDkzMjIwNTEzMzk3NA.GWbNk_.SVrGW7GI8GTL3EtUlgaJZMM9qJ5LefpG6-yc_I"
